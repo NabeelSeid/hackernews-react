@@ -44,7 +44,10 @@ class App extends Component {
 
     return (
       <div className="App">
-        <Search value={searchTerm} onChange={this.onSearchChange} />
+        <Search value={searchTerm} onChange={this.onSearchChange}>
+          {/* Components can also be passed to another Component via props */}
+          Search
+        </Search>
         <Table list={list} pattern={searchTerm} onDismiss={this.onDismiss} />
       </div>
     );
@@ -53,10 +56,11 @@ class App extends Component {
 
 class Search extends Component {
   render() {
-    const { searchTerm, onChange } = this.props;
+    const { searchTerm, onChange, children } = this.props;
 
     return (
       <form>
+        {children}
         <input type="text" value={searchTerm} onChange={onChange} />
       </form>
     );
