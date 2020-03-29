@@ -38,8 +38,11 @@ class App extends Component {
 
   // binding and constructor can be avoided by using arrow function
   onDismiss(id) {
+    const updatedHits = this.state.result.hits.filter(
+      item => item.objectID !== id
+    );
     this.setState({
-      list: this.state.list.filter(item => item.objectID !== id)
+      result: { ...this.state.result, hits: updatedHits }
     });
   }
 
