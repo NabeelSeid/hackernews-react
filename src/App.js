@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import axios from 'axios'
 import './App.css'
 
 const DEFAULT_QUERY = 'redux'
@@ -13,12 +14,15 @@ const PARAM_HPP = 'hitsPerPage='
 // const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
 
 class App extends Component {
+  _isMounted = false
+
   constructor(props) {
     super(props)
     this.state = {
       results: null,
       searchKey: '',
       searchTerm: DEFAULT_QUERY,
+      error: null,
     }
 
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(
@@ -43,11 +47,6 @@ class App extends Component {
 
     const updatedHits = [...oldHits, ...hits]
 
-    // Load More Feature
-    // const oldHits = page !== 0 ? this.state.result.hits : []
-
-    // result = {...result, hits: [...oldHits, ...hits]}
-
     this.setState({
       results: {
         ...results,
@@ -61,16 +60,24 @@ class App extends Component {
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}` +
       `${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${hpp}`
 
-    fetch(url)
-      .then(response => response.json())
-      .then(result => this.setSearchTopStories(result))
-      .catch(err => err)
+    axios(url)
+      .then(
+        result =>
+          this._isMounted && this.setSearchTopStories(result.data),
+      )
+      .catch(error => this._isMounted && this.setState({ error }))
   }
 
   componentDidMount() {
+    this._isMounted = true
+
     const { searchTerm } = this.state
     this.setState({ searchKey: searchTerm })
     this.fetchSearchTopStories(searchTerm)
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false
   }
 
   onSearchSubmit(event) {
@@ -103,7 +110,7 @@ class App extends Component {
   }
 
   render() {
-    const { results, searchKey, searchTerm } = this.state
+    const { results, searchKey, searchTerm, error } = this.state
 
     const page =
       (results && results[searchKey] && results[searchKey].page) || 0
@@ -121,7 +128,13 @@ class App extends Component {
             {/* Components can also be passed to another Component via props */}
             Search
           </Search>
-          <Table list={list} onDismiss={this.onDismiss} />
+          {error ? (
+            <div className="interactions">
+              <p>Something went wrong.</p>
+            </div>
+          ) : (
+            <Table list={list} onDismiss={this.onDismiss} />
+          )}
           <div className="interactions">
             <Button
               onClick={() =>
