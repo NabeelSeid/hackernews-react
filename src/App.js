@@ -2,13 +2,13 @@ import React, {Component} from 'react'
 import './App.css'
 
 const DEFAULT_QUERY = 'redux'
-const DEFAULT_HPP = '100'
+const DEFAULT_HPP = '50'
 
 const PATH_BASE = 'https://hn.algolia.com/api/v1'
 const PATH_SEARCH = '/search'
 const PARAM_SEARCH = 'query='
 const PARAM_PAGE = 'page='
-const PARAM_HPP = 'hitPerPage='
+const PARAM_HPP = 'hitsPerPage='
 
 // const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
 
@@ -34,8 +34,9 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm, page = 0, hpp = DEFAULT_HPP) {
-    const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&
-      ${PARAM_PAGE}${page}&${PARAM_HPP}${hpp}`
+    const url =
+      `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}` +
+      `${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${hpp}`
 
     fetch(url)
       .then(response => response.json())
