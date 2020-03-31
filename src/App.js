@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import './App.css'
 
 const DEFAULT_QUERY = 'redux'
@@ -15,22 +15,45 @@ const PARAM_HPP = 'hitsPerPage='
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {result: null, searchTerm: DEFAULT_QUERY}
+    this.state = {
+      results: null,
+      searchKey: '',
+      searchTerm: DEFAULT_QUERY,
+    }
 
+    this.needsToSearchTopStories = this.needsToSearchTopStories.bind(
+      this,
+    )
     this.setSearchTopStories = this.setSearchTopStories.bind(this)
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this)
     this.onSearchSubmit = this.onSearchSubmit.bind(this)
     this.onDismiss = this.onDismiss.bind(this)
   }
 
+  needsToSearchTopStories(searchTerm) {
+    return !this.state.results[searchTerm]
+  }
+
   setSearchTopStories(result) {
-    const {hits, page} = result
+    const { hits, page } = result
+    const { searchKey, results } = this.state
 
-    const oldHits = page !== 0 ? this.state.result.hits : []
+    const oldHits =
+      results && results[searchKey] ? results[searchKey].hits : []
 
-    result = {...result, hits: [...oldHits, ...hits]}
+    const updatedHits = [...oldHits, ...hits]
 
-    this.setState({result})
+    // Load More Feature
+    // const oldHits = page !== 0 ? this.state.result.hits : []
+
+    // result = {...result, hits: [...oldHits, ...hits]}
+
+    this.setState({
+      results: {
+        ...results,
+        [searchKey]: { hits: updatedHits, page },
+      },
+    })
   }
 
   fetchSearchTopStories(searchTerm, page = 0, hpp = DEFAULT_HPP) {
@@ -45,33 +68,48 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const {searchTerm} = this.state
+    const { searchTerm } = this.state
+    this.setState({ searchKey: searchTerm })
     this.fetchSearchTopStories(searchTerm)
   }
 
   onSearchSubmit(event) {
-    const {searchTerm} = this.state
-    this.fetchSearchTopStories(searchTerm)
+    const { searchTerm } = this.state
+    this.setState({ searchKey: searchTerm })
+
+    if (this.needsToSearchTopStories(searchTerm))
+      this.fetchSearchTopStories(searchTerm)
+
     event.preventDefault()
   }
 
   onSearchChange = event => {
-    this.setState({searchTerm: event.target.value})
+    this.setState({ searchTerm: event.target.value })
   }
 
   // binding and constructor can be avoided by using arrow function
   onDismiss(id) {
-    const updatedHits = this.state.result.hits.filter(
-      item => item.objectID !== id,
-    )
+    const { searchKey, results } = this.state
+    const { hits, page } = results[searchKey]
+
+    const updatedHits = hits.filter(item => item.objectID !== id)
+
     this.setState({
-      result: {...this.state.result, hits: updatedHits},
+      results: {
+        ...results,
+        [searchKey]: { hits: updatedHits, page },
+      },
     })
   }
 
   render() {
-    const {result, searchTerm} = this.state
-    const page = (result && result.page) || 0
+    const { results, searchKey, searchTerm } = this.state
+
+    const page =
+      (results && results[searchKey] && results[searchKey].page) || 0
+
+    const list =
+      (results && results[searchKey] && results[searchKey].hits) || []
 
     return (
       <div className="App page">
@@ -83,13 +121,11 @@ class App extends Component {
             {/* Components can also be passed to another Component via props */}
             Search
           </Search>
-          {result && (
-            <Table list={result.hits} onDismiss={this.onDismiss} />
-          )}
+          <Table list={list} onDismiss={this.onDismiss} />
           <div className="interactions">
             <Button
               onClick={() =>
-                this.fetchSearchTopStories(searchTerm, page + 1)
+                this.fetchSearchTopStories(searchKey, page + 1)
               }>
               More
             </Button>
@@ -100,7 +136,7 @@ class App extends Component {
   }
 }
 
-const Search = ({searchTerm, onChange, onSubmit, children}) => (
+const Search = ({ searchTerm, onChange, onSubmit, children }) => (
   <form onSubmit={onSubmit}>
     <input type="text" value={searchTerm} onChange={onChange} />
     <button type="submit">{children}</button>
@@ -117,7 +153,7 @@ const smallColumn = {
   width: '10%',
 }
 
-const Table = ({list, onDismiss}) => (
+const Table = ({ list, onDismiss }) => (
   <div className="table">
     {list.map(item => (
       <div key={item.objectID} className="table-row">
@@ -139,7 +175,7 @@ const Table = ({list, onDismiss}) => (
   </div>
 )
 
-const Button = ({onClick, className = '', children}) => (
+const Button = ({ onClick, className = '', children }) => (
   <button onClick={onClick} className={className} type="button">
     {children}
   </button>
