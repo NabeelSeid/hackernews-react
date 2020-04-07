@@ -32,6 +32,11 @@ const Loading = () => (
   </label>
 )
 
+const withLoading = Component => ({ isLoading, ...rest }) =>
+  isLoading ? <Loading /> : <Component {...rest} />
+
+const ButtonWithLoading = withLoading(Button)
+
 class App extends Component {
   _isMounted = false
 
@@ -165,16 +170,13 @@ class App extends Component {
             <Table list={list} onDismiss={this.onDismiss} />
           )}
           <div className="interactions">
-            {isLoading ? (
-              <Loading />
-            ) : (
-              <Button
-                onClick={() =>
-                  this.fetchSearchTopStories(searchKey, page + 1)
-                }>
-                More
-              </Button>
-            )}
+            <ButtonWithLoading
+              isLoading={isLoading}
+              onClick={() =>
+                this.fetchSearchTopStories(searchKey, page + 1)
+              }>
+              More
+            </ButtonWithLoading>
           </div>
         </div>
       </div>
