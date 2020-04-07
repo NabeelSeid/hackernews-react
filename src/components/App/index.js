@@ -2,6 +2,11 @@ import React, { Component } from 'react'
 import axios from 'axios'
 import './index.css'
 
+// FontAwesome
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 //COMPONENTS
 import Search from '../Search'
 import Table from '../Table'
@@ -18,7 +23,14 @@ import {
   DEFAULT_QUERY,
 } from '../../constants'
 
-const Loading = () => <div>Loading...</div>
+library.add(faSpinner)
+
+const Loading = () => (
+  <label>
+    <FontAwesomeIcon icon="spinner" spin={true} size="lg" />
+    &nbsp;Loading...
+  </label>
+)
 
 class App extends Component {
   _isMounted = false
