@@ -18,6 +18,8 @@ import {
   DEFAULT_QUERY,
 } from '../../constants'
 
+const Loading = () => <div>Loading...</div>
+
 class App extends Component {
   _isMounted = false
 
@@ -28,6 +30,7 @@ class App extends Component {
       searchKey: '',
       searchTerm: DEFAULT_QUERY,
       error: null,
+      isLoading: false,
     }
 
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(
@@ -57,10 +60,13 @@ class App extends Component {
         ...results,
         [searchKey]: { hits: updatedHits, page },
       },
+      isLoading: false,
     })
   }
 
   fetchSearchTopStories(searchTerm, page = 0, hpp = DEFAULT_HPP) {
+    this.setState({ isLoading: true })
+
     const url =
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}` +
       `${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${hpp}`
@@ -115,7 +121,13 @@ class App extends Component {
   }
 
   render() {
-    const { results, searchKey, searchTerm, error } = this.state
+    const {
+      results,
+      searchKey,
+      searchTerm,
+      error,
+      isLoading,
+    } = this.state
 
     const page =
       (results && results[searchKey] && results[searchKey].page) || 0
@@ -141,12 +153,16 @@ class App extends Component {
             <Table list={list} onDismiss={this.onDismiss} />
           )}
           <div className="interactions">
-            <Button
-              onClick={() =>
-                this.fetchSearchTopStories(searchKey, page + 1)
-              }>
-              More
-            </Button>
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <Button
+                onClick={() =>
+                  this.fetchSearchTopStories(searchKey, page + 1)
+                }>
+                More
+              </Button>
+            )}
           </div>
         </div>
       </div>
