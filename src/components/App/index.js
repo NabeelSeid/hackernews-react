@@ -4,7 +4,11 @@ import './index.css'
 
 // FontAwesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import {
+  faSpinner,
+  faSortUp,
+  faSortDown,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 //COMPONENTS
@@ -23,7 +27,7 @@ import {
   DEFAULT_QUERY,
 } from '../../constants'
 
-library.add(faSpinner)
+library.add(faSpinner, faSortUp, faSortDown)
 
 const Loading = () => (
   <label>
@@ -48,6 +52,8 @@ class App extends Component {
       searchTerm: DEFAULT_QUERY,
       error: null,
       isLoading: false,
+      sortKey: 'NONE',
+      isSortReverse: false,
     }
 
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(
@@ -57,6 +63,7 @@ class App extends Component {
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this)
     this.onSearchSubmit = this.onSearchSubmit.bind(this)
     this.onDismiss = this.onDismiss.bind(this)
+    this.onSort = this.onSort.bind(this)
   }
 
   needsToSearchTopStories(searchTerm) {
@@ -122,6 +129,12 @@ class App extends Component {
     this.setState({ searchTerm: event.target.value })
   }
 
+  onSort(sortKey) {
+    const isSortReverse =
+      this.state.sortKey === sortKey && !this.state.isSortReverse
+    this.setState({ sortKey, isSortReverse })
+  }
+
   // binding and constructor can be avoided by using arrow function
   onDismiss(id) {
     const { searchKey, results } = this.state
@@ -144,6 +157,8 @@ class App extends Component {
       searchTerm,
       error,
       isLoading,
+      sortKey,
+      isSortReverse,
     } = this.state
 
     const page =
@@ -167,7 +182,13 @@ class App extends Component {
               <p>Something went wrong.</p>
             </div>
           ) : (
-            <Table list={list} onDismiss={this.onDismiss} />
+            <Table
+              list={list}
+              sortKey={sortKey}
+              onSort={this.onSort}
+              isSortReverse={isSortReverse}
+              onDismiss={this.onDismiss}
+            />
           )}
           <div className="interactions">
             <ButtonWithLoading
