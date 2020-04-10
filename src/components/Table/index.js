@@ -5,8 +5,6 @@ import classNames from 'classnames'
 import Button from '../Button'
 
 import {
-  faSortUp,
-  faSortDown,
   faAngleUp,
   faAngleDown,
 } from '@fortawesome/free-solid-svg-icons'
@@ -63,6 +61,14 @@ const Sort = ({
     </div>
   )
 }
+
+const updateSortState = sortKey => state => {
+  const isSortReverse =
+    state.sortKey === sortKey && !state.isSortReverse
+
+  return { sortKey, isSortReverse }
+}
+
 class Table extends Component {
   state = {
     sortKey: 'NONE',
@@ -70,14 +76,12 @@ class Table extends Component {
   }
 
   onSort = sortKey => {
-    const isSortReverse =
-      this.state.sortKey === sortKey && !this.state.isSortReverse
-    this.setState({ sortKey, isSortReverse })
+    this.setState(updateSortState(sortKey))
   }
 
   render() {
     const { list, onDismiss } = this.props
-    const { sortKey, onSort, isSortReverse } = this.state
+    const { sortKey, isSortReverse } = this.state
 
     // Reverse reverse list if isSortReverse TRUE
     const sortedList = SORTS[sortKey](list)

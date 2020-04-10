@@ -34,6 +34,36 @@ const withLoading = Component => ({ isLoading, ...rest }) =>
 
 const ButtonWithLoading = withLoading(Button)
 
+const updateSearchTopStoriesState = (hits, page) => state => {
+  const { searchKey, results } = state
+
+  const oldHits =
+    results && results[searchKey] ? results[searchKey].hits : []
+
+  const updatedHits = [...oldHits, ...hits]
+
+  return {
+    results: {
+      ...results,
+      [searchKey]: { hits: updatedHits, page },
+    },
+    isLoading: false,
+  }
+}
+
+const updateDeleteStoriesState = id => state => {
+  const { searchKey, results } = state
+  const { hits, page } = results[searchKey]
+  const updatedHits = hits.filter(item => item.objectID !== id)
+
+  return {
+    results: {
+      ...results,
+      [searchKey]: { hits: updatedHits, page },
+    },
+  }
+}
+
 class App extends Component {
   _isMounted = false
 
@@ -62,20 +92,8 @@ class App extends Component {
 
   setSearchTopStories(result) {
     const { hits, page } = result
-    const { searchKey, results } = this.state
 
-    const oldHits =
-      results && results[searchKey] ? results[searchKey].hits : []
-
-    const updatedHits = [...oldHits, ...hits]
-
-    this.setState({
-      results: {
-        ...results,
-        [searchKey]: { hits: updatedHits, page },
-      },
-      isLoading: false,
-    })
+    this.setState(updateSearchTopStoriesState(hits, page))
   }
 
   fetchSearchTopStories(searchTerm, page = 0, hpp = DEFAULT_HPP) {
@@ -97,7 +115,9 @@ class App extends Component {
     this._isMounted = true
 
     const { searchTerm } = this.state
-    this.setState({ searchKey: searchTerm })
+    this.setState(state => ({
+      searchKey: state.searchTerm,
+    }))
     this.fetchSearchTopStories(searchTerm)
   }
 
@@ -121,17 +141,7 @@ class App extends Component {
 
   // binding and constructor can be avoided by using arrow function
   onDismiss(id) {
-    const { searchKey, results } = this.state
-    const { hits, page } = results[searchKey]
-
-    const updatedHits = hits.filter(item => item.objectID !== id)
-
-    this.setState({
-      results: {
-        ...results,
-        [searchKey]: { hits: updatedHits, page },
-      },
-    })
+    this.setState(updateDeleteStoriesState(id))
   }
 
   render() {
